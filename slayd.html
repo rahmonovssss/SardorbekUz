@@ -2,80 +2,40 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slayd Yaratish Tizimi</title>
+    <title>AI Slayd Sinov</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { background-color: #0a0a12; color: white; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { width: 90%; max-width: 450px; padding: 25px; background: #161722; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #00f2ff; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0a0a12; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; margin-top: 15px; background: #00f2ff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: #0a0a12; transition: 0.3s; }
-        button:hover { background: #00c4cf; }
-        button:disabled { background: #555; cursor: not-allowed; }
-    </style>
 </head>
 <body>
+    <h2>AI Slayd Sinov</h2>
+    <input type="text" id="mavzu" placeholder="Mavzuni kiriting...">
+    <button onclick="yarat()">Slayd yaratish</button>
 
-<div class="container">
-    <h2>Slayd yaratish</h2>
-    <input type="text" id="mavzu" placeholder="Slayd mavzusini kiriting...">
-    <select id="count">
-        <option value="3">3 ta slayd</option>
-        <option value="5">5 ta slayd</option>
-        <option value="10">10 ta slayd</option>
-    </select>
-    <button id="btn" onclick="yarat()">PDF fayl yaratish</button>
-</div>
+    <script>
+        async function yarat() {
+            const mavzu = document.getElementById('mavzu').value;
+            const API_KEY = "AQ.Ab8RN6IHC9GzSEsernNqP5YJlX5SiYol2dvxcvrc2yHG_0rvTw"; // SHU YERGA GOOGLE AI STUDIO KALITINI QO'YING
 
-<script>
-    async function yarat() {
-        const mavzu = document.getElementById('mavzu').value;
-        const count = document.getElementById('count').value;
-        const btn = document.getElementById('btn');
+            if (!mavzu) return alert("Mavzuni kiriting!");
 
-        if (!mavzu) {
-            alert("Iltimos, mavzuni kiriting!");
-            return;
-        }
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-        btn.innerText = "Yaratilmoqda...";
-        btn.disabled = true;
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `${mavzu} mavzusida 3 ta slayd uchun qisqa matn yoz.` }] }]
+                })
+            });
 
-        try {
-            // PDF obyektini yaratish
+            const data = await response.json();
+            const aiText = data.candidates[0].content.parts[0].text;
+
+            // PDF yaratish
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-
-            // Muqova qismi
-            doc.setFontSize(22);
-            doc.text(`Mavzu: ${mavzu}`, 20, 40);
-            doc.setFontSize(14);
-            doc.text("Avtomatik yaratilgan slayd", 20, 50);
-
-            // Slaydlar uchun sikl
-            for (let i = 1; i <= count; i++) {
-                doc.addPage();
-                doc.setFontSize(18);
-                doc.text(`Slayd #${i}`, 20, 20);
-                doc.setFontSize(12);
-                doc.text(`Bu yerda AI orqali olingan ma'lumotlar joylashadi.`, 20, 40);
-                doc.text(`Mavzu: ${mavzu} bo'yicha muhim ma'lumotlar...`, 20, 50);
-            }
-
-            // Yuklab olish
-            doc.save(`${mavzu}_slayd.pdf`);
-            alert("PDF muvaffaqiyatli yaratildi!");
-
-        } catch (err) {
-            console.error(err);
-            alert("Xatolik yuz berdi!");
-        } finally {
-            btn.innerText = "PDF fayl yaratish";
-            btn.disabled = false;
+            doc.text(aiText, 10, 10);
+            doc.save("test_slayd.pdf");
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
