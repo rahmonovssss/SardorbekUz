@@ -3,32 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; }
-        input { padding: 10px; width: 300px; margin-bottom: 10px; }
-        button { padding: 10px 20px; cursor: pointer; }
-    </style>
 </head>
 <body>
-    <h2>AI Slayd Yaratish</h2>
-    <input type="text" id="mavzu" placeholder="Mavzuni kiriting...">
+    <input type="text" id="mavzu" placeholder="Mavzuni yozing...">
     <button onclick="yarat()">PDF Yaratish</button>
 
     <script>
         async function yarat() {
             const mavzu = document.getElementById('mavzu').value;
-            // API kalitingizni shu yerga joylang (faqat bitta qator)
-            const API_KEY = "AQ.Ab8RN6KXkqS7YZdZ8zIUI5Iubb1iFo6GSXks4YD7593m2Dqf0A"; 
+            // Sizdagi AQ... bilan boshlanuvchi kalitni shu yerga qo'ying
+            const ACCESS_TOKEN = "AQ.Ab8RN6IKMOScehyH92S0rgAqU8Pwh8RWmiW6FDffO8GeUlaSLg"; 
 
-            // Model nomi formatini to'g'rilaymiz
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            // Token bilan so'rov yuborish
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
 
             try {
                 const response = await fetch(url, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer " + ACCESS_TOKEN 
+                    },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: mavzu + " mavzusida 3 ta slayd uchun qisqa va tushunarli matn yozib ber." }] }]
+                        contents: [{ parts: [{ text: mavzu + " haqida qisqa slayd matni yoz." }] }]
                     })
                 });
 
@@ -36,18 +33,15 @@
                 
                 if (data.error) {
                     alert("Xato: " + data.error.message);
+                    console.log(data.error);
                     return;
                 }
 
                 const aiText = data.candidates[0].content.parts[0].text;
                 
-                // PDF yaratish
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                doc.setFontSize(16);
-                doc.text("Mavzu: " + mavzu, 10, 10);
-                doc.setFontSize(12);
-                doc.text(aiText, 10, 30, { maxWidth: 180 });
+                doc.text(aiText, 10, 10, { maxWidth: 180 });
                 doc.save("slayd.pdf");
                 
             } catch (e) {
