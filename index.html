@@ -3,55 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlaydX Bot</title>
+    <title>Slaydchi Bot</title>
     <style>
-        body { background-color: #0f0a1f; color: white; font-family: sans-serif; margin: 0; padding: 0; }
-        .container { padding: 20px; padding-bottom: 80px; }
-        .header { text-align: center; font-size: 24px; font-weight: bold; color: #00f2ff; margin-bottom: 20px; }
+        :root {
+            --bg: #0a0a12;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent: #00f2ff;
+        }
+        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
-        /* Xizmatlar Grid */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .card { background: #1a1533; padding: 15px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .card:hover { background: #2a254d; }
-        .card div { font-size: 12px; margin-top: 5px; color: #aaa; }
+        .header { text-align: center; padding: 30px; font-size: 28px; font-weight: bold; background: linear-gradient(to right, #00f2ff, #7000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px; }
+        .card { background: var(--card-bg); backdrop-filter: blur(10px); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .icon { font-size: 30px; margin-bottom: 10px; display: block; }
 
-        /* Bottom Nav */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: #1a1533; padding: 15px 0; border-top: 1px solid #333; }
-        .nav-item { cursor: pointer; text-align: center; font-size: 12px; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; background: rgba(20, 20, 30, 0.9); backdrop-filter: blur(15px); padding: 15px 0; border-top: 1px solid #333; }
+        .nav-item { cursor: pointer; text-align: center; font-size: 12px; color: #888; }
+        .nav-item.active { color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div class="container" id="content">
-    <div class="header">SlaydX bot</div>
-    
-    <div class="grid">
-        <div class="card">📄 <div>Slayd yaratish</div></div>
-        <div class="card">📝 <div>Mustaqil ish</div></div>
-        <div class="card">📑 <div>Referat</div></div>
-        <div class="card">✅ <div>Test</div></div>
-        <div class="card">📋 <div>Tezis</div></div>
-        <div class="card">📰 <div>Maqola</div></div>
-        <div class="card">📖 <div>Glossary</div></div>
-        <div class="card">🧩 <div>Krossvord</div></div>
-        <div class="card">🎓 <div>Kurs ishi</div></div>
-        <div class="card">🎨 <div>Rasm yaratish</div></div>
-        <div class="card">🤖 <div>AI Yordamchi</div></div>
-    </div>
+<div class="header">Slaydchi Bot 🎓</div>
+
+<div class="grid" id="main-content">
+    <div class="card"><span class="icon">📄</span>Slayd yaratish</div>
+    <div class="card"><span class="icon">✍️</span>Mustaqil ish</div>
+    <div class="card"><span class="icon">📑</span>Referat</div>
+    <div class="card"><span class="icon">✅</span>Test</div>
+    <div class="card"><span class="icon">📝</span>Tezis</div>
+    <div class="card"><span class="icon">📰</span>Maqola</div>
+    <div class="card"><span class="icon">🎨</span>Rasm yaratish</div>
+    <div class="card"><span class="icon">🤖</span>AI Yordamchi</div>
 </div>
 
 <div class="nav-bar">
-    <div class="nav-item" onclick="loadPage('home')">🏠<br>Bosh sahifa</div>
-    <div class="nav-item" onclick="loadPage('prices')">🏷️<br>Narxlar</div>
-    <div class="nav-item" onclick="loadPage('balance')">💳<br>Balansim</div>
+    <div class="nav-item active" onclick="render('home')">🏠<br>Bosh sahifa</div>
+    <div class="nav-item" onclick="render('prices')">🏷️<br>Narxlar</div>
+    <div class="nav-item" onclick="render('balance')">💳<br>Balansim</div>
+    <div class="nav-item" onclick="render('refill')">💰<br>To'ldirish</div>
 </div>
 
 <script>
-    function loadPage(page) {
-        const content = document.getElementById('content');
-        if(page === 'home') content.innerHTML = "<h1>Bosh sahifa</h1><p>Asosiy menyu...</p>";
-        else if(page === 'prices') content.innerHTML = "<h1>Narxlar</h1><p>Obuna narxlari bu yerda.</p>";
-        else content.innerHTML = "<h1>Balans</h1><p>Sizda 0 so'm mavjud.</p>";
+    function render(page) {
+        const content = document.getElementById('main-content');
+        if(page === 'home') location.reload(); // Bosh sahifani qayta yuklash
+        else content.innerHTML = `<div style="padding:20px; text-align:center; width:100%">${page.toUpperCase()} bo'limi ustida ishlanmoqda...</div>`;
     }
 </script>
 
