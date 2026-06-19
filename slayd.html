@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Slayd Yaratish</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { background-color: #0a0a12; color: white; font-family: sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 10px 0; background: #161722; border: 1px solid #333; color: white; border-radius: 8px; }
+        button { width: 100%; padding: 15px; background: #00f2ff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" style="color: #00f2ff;">← Orqaga</a>
+    <h2>Slayd yaratish</h2>
+    
+    <input type="text" id="mavzu" placeholder="Slayd mavzusi...">
+    <select id="count">
+        <option value="5">5 ta slayd</option>
+        <option value="10">10 ta slayd</option>
+    </select>
+    
+    <button onclick="yarat()">Slayd yaratish (PDF)</button>
+</div>
+
+<script>
+    async function yarat() {
+        const mavzu = document.getElementById('mavzu').value;
+        const count = document.getElementById('count').value;
+
+        if (!mavzu) return alert("Mavzuni kiriting!");
+
+        alert("AI orqali ma'lumotlar olinmoqda... (Bu yerda backendga so'rov ketadi)");
+
+        // Bu qismda siz o'z backend API'ngizga so'rov yuborasiz (Fetch)
+        // Hozircha namunaviy PDF yaratish:
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.text(`Mavzu: ${mavzu}`, 10, 10);
+        doc.text(`Slaydlar soni: ${count}`, 10, 20);
+        doc.text("Bu yerda AI tomonidan yozilgan matn bo'ladi.", 10, 40);
+
+        doc.save(`${mavzu}_slayd.pdf`);
+    }
+</script>
+
+</body>
+</html>
