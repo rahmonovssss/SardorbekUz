@@ -2,40 +2,76 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>AI Slayd Sinov</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Slayd Yaratish</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { background-color: #0a0a12; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { width: 90%; max-width: 400px; padding: 20px; background: #161722; border-radius: 12px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 6px; border: 1px solid #333; background: #0a0a12; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #00f2ff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:disabled { background: #555; }
+    </style>
 </head>
 <body>
-    <h2>AI Slayd Sinov</h2>
+
+<div class="container">
+    <h2>Slayd Yaratish</h2>
     <input type="text" id="mavzu" placeholder="Mavzuni kiriting...">
-    <button onclick="yarat()">Slayd yaratish</button>
+    <button id="btn" onclick="yarat()">PDF Slayd Yaratish</button>
+</div>
 
-    <script>
-        async function yarat() {
-            const mavzu = document.getElementById('mavzu').value;
-            const API_KEY = "AQ.Ab8RN6IHC9GzSEsernNqP5YJlX5SiYol2dvxcvrc2yHG_0rvTw"; // SHU YERGA GOOGLE AI STUDIO KALITINI QO'YING
+<script>
+    async function yarat() {
+        const mavzu = document.getElementById('mavzu').value;
+        const btn = document.getElementById('btn');
+        const API_KEY = "SIZNING_API_KALITINGIZ"; // <--- SHU YERGA O'ZINGIZNING API KALITINGIZNI QO'YING
 
-            if (!mavzu) return alert("Mavzuni kiriting!");
+        if (!mavzu) return alert("Mavzuni kiriting!");
 
+        btn.innerText = "Kutib turing...";
+        btn.disabled = true;
+
+        try {
+            // 1. AI ga so'rov yuborish
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `${mavzu} mavzusida 3 ta slayd uchun qisqa matn yoz.` }] }]
+                    contents: [{ parts: [{ text: `${mavzu} mavzusida 3 ta slayd uchun qisqa va tushunarli matn yozib ber.` }] }]
                 })
             });
 
             const data = await response.json();
+            
+            // Xatolik bo'lsa tekshirish
+            if (!data.candidates) throw new Error("AI javob bermadi: " + JSON.stringify(data));
+            
             const aiText = data.candidates[0].content.parts[0].text;
 
-            // PDF yaratish
+            // 2. PDF yaratish
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text(aiText, 10, 10);
-            doc.save("test_slayd.pdf");
+            
+            doc.setFontSize(18);
+            doc.text(`Mavzu: ${mavzu}`, 20, 20);
+            doc.setFontSize(12);
+            // Matnni PDF ga sig'dirish uchun maxWidth ishlatamiz
+            doc.text(aiText, 20, 40, { maxWidth: 170 });
+            
+            doc.save(`${mavzu}_slayd.pdf`);
+            alert("Tayyor! Fayl yuklandi.");
+
+        } catch (err) {
+            console.error(err);
+            alert("Xatolik: " + err.message);
+        } finally {
+            btn.innerText = "PDF Slayd Yaratish";
+            btn.disabled = false;
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
