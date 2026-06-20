@@ -3,83 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI PDF Yaratuvchi</title>
-    <!-- Slayd (PowerPoint) fayli yaratish uchun eng yaxshi kutubxona -->
+    <title>AI Slayd Yaratuvchi</title>
+    
+    <!-- Slayd (PowerPoint) yaratish kutubxonasi -->
     <script src="https://cloudflare.com"></script>
+    
+    <!-- Google Gemini brauzer uchun rasmiy kutubxonasi (Node.js shart emas!) -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run"
+        }
+      }
+    </script>
 </head>
 <body>
 
-    <div style="text-align: center; margin-top: 50px;">
+    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
         <h2>AI Slayd Yaratish</h2>
-        <input type="text" id="mavzu" placeholder="Mavzuni yozing..." style="padding: 10px; width: 300px;">
-        <button onclick="yarat()" style="padding: 10px 20px; cursor: pointer;">Slayd (PPTX) Yaratish</button>
+        <input type="text" id="mavzu" placeholder="Mavzuni yozing..." style="padding: 10px; width: 300px; font-size: 16px;">
+        <button onclick="yarat()" style="padding: 10px 20px; cursor: pointer; font-size: 16px;">Slayd (PPTX) Yaratish</button>
+        <p id="holat" style="color: blue; font-weight: bold; margin-top: 15px;"></p>
     </div>
 
-    <script>
-        async function yarat() {
+    <script type="module">
+        import { GoogleGenAI } from "@google/generative-ai";
+
+        window.yarat = async function() {
             const mavzu = document.getElementById('mavzu').value;
+            const holatTeksti = document.getElementById('holat');
+
             if (!mavzu) {
                 alert("Iltimos, mavzu kiriting!");
                 return;
             }
 
-            // 1. O'zingizning haqiqiy Gemini API kalitingizni shu yerga qo'ying:
-            const API_KEY = "AQ.Ab8RN6IKMOScehyH92S0rgAqU8Pwh8RWmiW6FDffO8GeUlaSLg"; 
-
-            // 2. To'g'ri URL manzili (Kalit oxiriga ulanadi)
-            const url = `https://googleapis.com{API_KEY}`;
+            // O'zingizning AQ. bilan boshlanuvchi kalitingizni shu yerga qo'ying
+            const API_KEY = "AQ.Ab8RN6KaIDkh5xD7hHnkZYd2iZNo8j1CNFVYNc87svCuL_no-Q"; 
 
             try {
-                // AI ga aniq topshiriq beramiz: JSON formatda javob qaytarsin
+                holatTeksti.innerText = "AI matn tayyorlamoqda, kuting...";
+                
+                const ai = new GoogleGenAI({ apiKey: API_KEY });
+                // GitHub Pages xavfsizligi uchun gemini-1.5-flash ishlatamiz
+                const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+
                 const prompt = `"${mavzu}" mavzusida slayd uchun reja va matn tayyorla. Javobni FAQAT mana bu JSON formatida ber, ichida boshqa hech qanday ortiqcha matn yoki belgi (uzun chiziqlar, markdown) bo'lmasin. Format: [{"title": "Slayd sarlavhasi", "text": "Slayd matni"}]`;
 
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: { 
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
-                    })
-                });
-
-                const data = await response.json();
+                const result = await model.generateContent(prompt);
+                let aiText = result.response.text();
                 
-                if (data.error) {
-                    alert("API Xatosi: " + data.error.message);
-                    console.log(data.error);
-                    return;
-                }
-
-                // AI qaytargan matnni tozalaymiz va JSON ga o'giramiz
-                let aiText = data.candidates[0].content.parts[0].text;
+                // Markdown belgilarini tozalash
                 aiText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
                 
                 const slidesData = JSON.parse(aiText);
                 
-                // 3. PptxGenJS orqali haqiqiy PowerPoint (.pptx) slayd yaratish
+                holatTeksti.innerText = "PowerPoint fayli yaratilmoqda...";
+                
                 let pptx = new PptxGenJS();
 
                 slidesData.forEach(slideInfo => {
                     let slide = pptx.addSlide();
                     
-                    // Sarlavha qo'shish
+                    // Sarlavha dizayni
                     slide.addText(slideInfo.title, { 
                         x: 0.5, y: 0.5, w: "90%", h: 1, 
                         fontSize: 24, bold: true, color: "363636" 
                     });
                     
-                    // Matn qo'shish
+                    // Matn dizayni
                     slide.addText(slideInfo.text, { 
                         x: 0.5, y: 1.8, w: "90%", h: 4, 
                         fontSize: 16, color: "666666" 
                     });
                 });
 
-                // Slaydni yuklab olish
                 pptx.writeFile({ fileName: `${mavzu}_slayd.pptx` });
+                holatTeksti.innerText = "Slayd yuklab olindi!";
                 
             } catch (e) {
+                holatTeksti.innerText = "";
                 alert("Xatolik yuz berdi: " + e.message);
                 console.error(e);
             }
