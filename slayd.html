@@ -2,50 +2,86 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PDF Yaratuvchi</title>
+    <!-- Slayd (PowerPoint) fayli yaratish uchun eng yaxshi kutubxona -->
+    <script src="https://cloudflare.com"></script>
 </head>
 <body>
-    <input type="text" id="mavzu" placeholder="Mavzuni yozing...">
-    <button onclick="yarat()">PDF Yaratish</button>
+
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>AI Slayd Yaratish</h2>
+        <input type="text" id="mavzu" placeholder="Mavzuni yozing..." style="padding: 10px; width: 300px;">
+        <button onclick="yarat()" style="padding: 10px 20px; cursor: pointer;">Slayd (PPTX) Yaratish</button>
+    </div>
 
     <script>
         async function yarat() {
             const mavzu = document.getElementById('mavzu').value;
-            // Sizdagi AQ... bilan boshlanuvchi kalitni shu yerga qo'ying
-            const ACCESS_TOKEN = "AQ.Ab8RN6IKMOScehyH92S0rgAqU8Pwh8RWmiW6FDffO8GeUlaSLg"; 
+            if (!mavzu) {
+                alert("Iltimos, mavzu kiriting!");
+                return;
+            }
 
-            // Token bilan so'rov yuborish
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+            // 1. O'zingizning haqiqiy Gemini API kalitingizni shu yerga qo'ying:
+            const API_KEY = "AQ.Ab8RN6IKMOScehyH92S0rgAqU8Pwh8RWmiW6FDffO8GeUlaSLg"; 
+
+            // 2. To'g'ri URL manzili (Kalit oxiriga ulanadi)
+            const url = `https://googleapis.com{API_KEY}`;
 
             try {
+                // AI ga aniq topshiriq beramiz: JSON formatda javob qaytarsin
+                const prompt = `"${mavzu}" mavzusida slayd uchun reja va matn tayyorla. Javobni FAQAT mana bu JSON formatida ber, ichida boshqa hech qanday ortiqcha matn yoki belgi (uzun chiziqlar, markdown) bo'lmasin. Format: [{"title": "Slayd sarlavhasi", "text": "Slayd matni"}]`;
+
                 const response = await fetch(url, {
                     method: "POST",
                     headers: { 
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer " + ACCESS_TOKEN 
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: mavzu + " haqida qisqa slayd matni yoz." }] }]
+                        contents: [{ parts: [{ text: prompt }] }]
                     })
                 });
 
                 const data = await response.json();
                 
                 if (data.error) {
-                    alert("Xato: " + data.error.message);
+                    alert("API Xatosi: " + data.error.message);
                     console.log(data.error);
                     return;
                 }
 
-                const aiText = data.candidates[0].content.parts[0].text;
+                // AI qaytargan matnni tozalaymiz va JSON ga o'giramiz
+                let aiText = data.candidates[0].content.parts[0].text;
+                aiText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
                 
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.text(aiText, 10, 10, { maxWidth: 180 });
-                doc.save("slayd.pdf");
+                const slidesData = JSON.parse(aiText);
+                
+                // 3. PptxGenJS orqali haqiqiy PowerPoint (.pptx) slayd yaratish
+                let pptx = new PptxGenJS();
+
+                slidesData.forEach(slideInfo => {
+                    let slide = pptx.addSlide();
+                    
+                    // Sarlavha qo'shish
+                    slide.addText(slideInfo.title, { 
+                        x: 0.5, y: 0.5, w: "90%", h: 1, 
+                        fontSize: 24, bold: true, color: "363636" 
+                    });
+                    
+                    // Matn qo'shish
+                    slide.addText(slideInfo.text, { 
+                        x: 0.5, y: 1.8, w: "90%", h: 4, 
+                        fontSize: 16, color: "666666" 
+                    });
+                });
+
+                // Slaydni yuklab olish
+                pptx.writeFile({ fileName: `${mavzu}_slayd.pptx` });
                 
             } catch (e) {
-                alert("Tarmoq xatosi: " + e.message);
+                alert("Xatolik yuz berdi: " + e.message);
+                console.error(e);
             }
         }
     </script>
